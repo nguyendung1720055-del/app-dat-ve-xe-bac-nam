@@ -35,6 +35,33 @@ Hoặc chọn thiết bị Small Phone trong Android Studio, mở `lib/main.dart
 
 APK debug: `build/app/outputs/flutter-apk/app-debug.apk`.
 
+## CSDL MySQL
+
+Backend lưu toàn bộ dữ liệu trong **MySQL 8** (InnoDB, utf8mb4), không dùng SQLite. Bảng được tạo tự động khi server khởi động (`server/lib/store.dart`, hằng `schema`): `users`, `sessions`, `trips`, `bookings`, `seat_locks`, `notifications`, `audit`, `settings`, `trip_positions`, `scans`, có khóa ngoại giữa vé, chuyến và người dùng.
+
+- **Trên máy:** MySQL 8.4 bản zip nằm ở `D:\mysql` (cấu hình `D:\mysql\my.ini`, chỉ nghe `127.0.0.1:3306`). `start-server.ps1` tự bật MySQL nếu chưa chạy. Database `bacnam` (chạy app) và `bacnam_test` (chạy test), user `bacnam` / `bacnam_local`. Dùng XAMPP cũng được: tạo database `bacnam` rồi chạy `start-server.ps1 -DatabaseUrl 'mysql://root:@127.0.0.1:3306/bacnam?ssl=false'`.
+- **Xem dữ liệu:** `D:\mysql\server\bin\mysql.exe --user=root --host=127.0.0.1 bacnam`, hoặc MySQL Workbench / phpMyAdmin.
+- **Chuỗi kết nối:** biến môi trường `DATABASE_URL=mysql://user:matkhau@host:port/tenDb`. Thêm `?ssl=false` nếu MySQL không bật TLS. MySQL 8 mặc định bật TLS nên không cần thêm.
+
+## Deploy lên Internet (Render + MySQL cloud)
+
+Backend đóng gói bằng `server/Dockerfile`, cấu hình Render nằm trong `render.yaml`.
+
+1. **MySQL cloud:** tạo dịch vụ MySQL miễn phí trên [Aiven](https://aiven.io) (Free plan), rồi chép **Service URI** dạng `mysql://avnadmin:...@...aivencloud.com:12345/defaultdb?ssl-mode=REQUIRED`.
+2. **GitHub:** đẩy thư mục `D:\xekhach` lên một repo. `server/data/` và file `.key` đã nằm trong `.gitignore`.
+3. **Render:** New → **Blueprint** → chọn repo. Render đọc `render.yaml` và hỏi:
+   - `DATABASE_URL`: dán Service URI ở bước 1.
+   - `ADMIN_PASSWORD`, `STAFF_PASSWORD`: mật khẩu tài khoản quản lý `0911111111` và nhân viên `0900000000`.
+   - `QR_KEY`: Render tự sinh. **Không đổi** sau khi đã bán vé, vì vé cũ sẽ không quét được.
+4. Mở `https://<tên-dịch-vụ>.onrender.com/health`, thấy `{"ok":true,...}` là xong.
+5. Build app trỏ lên server thật:
+   ```powershell
+   flutter build apk --release --dart-define=API_URL=https://<tên-dịch-vụ>.onrender.com
+   ```
+   Hoặc trong app → **Cài đặt kết nối**, nhập địa chỉ đó.
+
+Gói miễn phí của Render tắt server sau 15 phút không có ai gọi; lần gọi đầu mất khoảng 1 phút để bật lại. Trước khi demo, mở `/health` một lần.
+
 ## Điện thoại Android thật / nhiều máy
 
 1. Máy tính chạy backend và các điện thoại dùng cùng mạng Wi-Fi.
@@ -125,7 +152,7 @@ Khi thanh toán, nhập tên và SĐT **người đi** (bố mẹ, người thâ
 
 ## Giữ ghế và thời hạn 5 phút
 
-Backend trong `server/` dùng SQLite. Mọi giữ/đổi/hủy/chốt thanh toán/xác nhận lên xe chạy trong giao dịch **`BEGIN IMMEDIATE`**. Bảng `seat_locks` có khóa chính `(trip_id, seat)`, nên hai khách không thể giữ hoặc mua cùng ghế cho cùng chuyến.
+Backend trong `server/` dùng MySQL. Mọi giữ/đổi/hủy/chốt thanh toán/xác nhận lên xe chạy trong **giao dịch MySQL** (`START TRANSACTION … COMMIT`, lỗi thì `ROLLBACK`), và các giao dịch được xếp hàng chạy lần lượt (`server/lib/db.dart`). Bảng `seat_locks` có khóa chính `(trip_id, seat)`, nên hai khách không thể giữ hoặc mua cùng ghế cho cùng chuyến.
 
 1. Chạm ghế → `POST /holds` tạo đơn `held`, `expires = giờ máy chủ + 300 giây`, đồng thời ghi khóa ghế.
 2. Đổi/thêm ghế → `PUT /holds/:id`, kiểm tra lại trong giao dịch; **không gia hạn expires**.
@@ -158,7 +185,7 @@ Hủy vé đã trả tiền chuyển sang `refund_pending`, thu hồi quyền d�
 
 Chuỗi QR có dạng `BN1.<base64url(nonce + ciphertext + tag)>`. Đây là mã hóa có kiểm tra tính toàn vẹn, không phải chỉ đổi JSON thành Base64. Quét bằng camera thường không hiện thông tin cá nhân dạng rõ.
 
-- Khóa 32 byte được sinh và lưu **chỉ trên backend** tại `server/data/qr.key`; không nằm trong Dart frontend/APK.
+- Khóa 32 byte chỉ nằm **trên backend**: biến môi trường `QR_KEY` khi deploy, hoặc file `server/data/qr.key` khi chạy trên máy. Khóa không có trong Dart frontend hay APK.
 - Flutter dùng `qr_flutter` để vẽ chuỗi do backend cấp sau thanh toán.
 - `mobile_scanner` đọc chuỗi; trên Android plugin dùng Google ML Kit.
 - `/staff/verify` giải mã, đối chiếu payload với database, kiểm tra thanh toán, trạng thái đã dùng, quá ngày đi và sai chuyến nếu nhân viên đã chọn chuyến.
@@ -181,7 +208,8 @@ Chuỗi QR có dạng `BN1.<base64url(nonce + ciphertext + tag)>`. Đây là mã
 | `lib/screens/staff.dart` | Điều hành, quản lý chuyến, ngân hàng |
 | `lib/screens/admin.dart` | Giao diện quản lý: thống kê, chuyến, khách, nhân viên, lượt quét |
 | `server/lib/admin.dart` | API `/admin/*` chỉ dành cho quản lý |
-| `server/lib/store.dart` | Schema SQLite, giao dịch, giữ ghế, hết hạn, hủy |
+| `server/lib/db.dart` | Kết nối MySQL: pool, tham số `?` đã escape, giao dịch |
+| `server/lib/store.dart` | Schema MySQL, giữ ghế, hết hạn, hủy |
 | `server/lib/security.dart` | PBKDF2 mật khẩu, token, mã hóa QR AES-GCM |
 | `server/lib/api.dart` | API, phân quyền, kiểm tra vé |
 | `server/bin/server.dart` | Khởi động server và tác vụ tự hết hạn |
@@ -217,10 +245,10 @@ flutter test integration_test/booking_flow_test.dart -d emulator-5554 --dart-def
 
 Bài này dùng backend thật, chọn ghế trên UI Flutter, kiểm tra khách thứ hai bị chặn, thanh toán mô phỏng, vẽ ảnh QR mã hóa rồi gọi plugin ML Kit Android đọc ảnh, xác nhận lên xe và từ chối dùng lại. Không dùng ảnh camera vật lý trong bài tự động này. Sau kiểm thử, build lại APK thông thường bằng `flutter build apk --debug`; không dùng APK test để trình bày.
 
-Bộ test backend kiểm tra tranh chấp hai khách, nhiều ghế nguyên tử, hết hạn đúng 300 giây, thanh toán muộn, không gia hạn khi đổi ghế, QR mã hóa/bị sửa, sai chuyến, xác nhận lên xe đồng thời, phân quyền, chuyển khoản thủ công, ẩn vé và khóa SQLite qua kết nối độc lập. Test Flutter kiểm tra đăng ký/đăng nhập, bố cục màn hình hẹp, chạm để giữ ghế và xử lý lỗi xung đột.
+Bộ test backend kiểm tra tranh chấp hai khách, nhiều ghế nguyên tử, hết hạn đúng 300 giây, thanh toán muộn, không gia hạn khi đổi ghế, QR mã hóa/bị sửa, sai chuyến, xác nhận lên xe đồng thời, phân quyền, chuyển khoản thủ công, ẩn vé và khóa ghế MySQL qua kết nối độc lập. Test backend chạy trên database `bacnam_test` (đặt `TEST_DATABASE_URL` để dùng database khác). Test Flutter kiểm tra đăng ký/đăng nhập, bố cục màn hình hẹp, chạm để giữ ghế và xử lý lỗi xung đột.
 
 Bản này phục vụ **đề tài chạy được với backend cục bộ**, chưa phải hệ thống thương mại đầy đủ như FUTA: chưa có cổng thanh toán tự động, OTP SMS/khôi phục mật khẩu khách hàng, ứng dụng tài xế/GPS, điểm thưởng/voucher, thông báo đẩy, quản trị nhiều chi nhánh hay triển khai máy chủ công khai. Lịch xe/giá/biển số mặc định là dữ liệu mẫu; backend sinh lịch 15 ngày. Muốn dùng kinh doanh cần dữ liệu vận hành thật, HTTPS, cấu hình thanh toán, sao lưu, giám sát và kiểm thử thiết bị trước khi phát hành.
 
 Tên dự án đang để `bac_nam`; họ tên/mã sinh viên theo yêu cầu bài tập sẽ bổ sung sau theo thông tin bạn xác nhận.
 
-Tài liệu tham khảo: [luồng đặt vé FUTA](https://futabus.vn/huong-dan-dat-ve-tren-web), [Flutter](https://docs.flutter.dev/install/quick), [mobile_scanner / ML Kit Android](https://pub.dev/packages/mobile_scanner), [cryptography](https://pub.dev/packages/cryptography), [SQLite Dart](https://pub.dev/packages/sqlite3).
+Tài liệu tham khảo: [luồng đặt vé FUTA](https://futabus.vn/huong-dan-dat-ve-tren-web), [Flutter](https://docs.flutter.dev/install/quick), [mobile_scanner / ML Kit Android](https://pub.dev/packages/mobile_scanner), [cryptography](https://pub.dev/packages/cryptography), [mysql_client](https://pub.dev/packages/mysql_client).
