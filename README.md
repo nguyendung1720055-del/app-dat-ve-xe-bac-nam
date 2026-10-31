@@ -31,7 +31,7 @@ flutter pub get
 flutter run -d emulator-5554
 ```
 
-Hoặc chọn thiết bị Small Phone trong Android Studio, mở `lib/main.dart`, bấm **Run**. Địa chỉ mặc định trên máy ảo Android là `http://10.0.2.2:8080`. Backend phải chạy trước.
+Hoặc chọn thiết bị Small Phone trong Android Studio, mở `lib/main.dart`, bấm **Run**. App mặc định gọi server thật `https://bacnam-api.onrender.com`, không cần bật backend trên máy. Muốn dùng backend trên máy thì chạy `flutter run --dart-define=API_URL=http://10.0.2.2:8080` (máy ảo), hoặc đổi trong **Cài đặt kết nối**.
 
 APK debug: `build/app/outputs/flutter-apk/app-debug.apk`.
 

@@ -945,7 +945,7 @@ Future<void> connectionDialog(BuildContext context, Session session) async {
         mainAxisSize: MainAxisSize.min,
         children: [
           const Text(
-            'Máy ảo Android: http://10.0.2.2:8080\nĐiện thoại thật: địa chỉ LAN của máy chạy backend.',
+            'Server thật: https://bacnam-api.onrender.com\nBackend chạy trên máy: http://10.0.2.2:8080 (máy ảo) hoặc IP LAN (điện thoại thật).',
           ),
           gap(),
           TextField(
