@@ -11,9 +11,19 @@ const localDatabase = 'mysql://bacnam:bacnam_local@127.0.0.1:3306/bacnam';
 
 Future<void> main() async {
   final env = Platform.environment;
-  final store = await Store.open(
-    DbConfig.parse(env['DATABASE_URL'] ?? localDatabase),
+  final config = DbConfig.parse(
+    (env['DATABASE_URL'] ?? localDatabase).trim(),
   );
+  print(
+    'Kết nối MySQL ${config.user}@${config.host}:${config.port}/${config.database} (TLS=${config.secure})...',
+  );
+  final Store store;
+  try {
+    store = await Store.open(config);
+  } catch (e) {
+    stderr.writeln('KHÔNG KẾT NỐI ĐƯỢC MYSQL: $e');
+    exit(1);
+  }
   await store.seed();
   final cipher = QrCipher(base64Url.decode(base64Url.normalize(qrKey(env))));
   for (final (role, name, label, defaultPhone) in [
