@@ -451,15 +451,6 @@ class Api {
     });
   }
 
-  Future<Map<String, dynamic>> qrPayload(Map<String, dynamic> b) async => {
-    'v': 1,
-    'id': b['id'],
-    'nonce': b['qr_id'],
-    'passenger': b['passenger'],
-    'trip_id': b['trip_id'],
-    'seats': b['seats'],
-    'date': (await store.trip(b['trip_id']))['date'],
-  };
   Future<Map<String, dynamic>> viewBooking(Map<String, dynamic> b) async => {
     ...b,
     'code': Store.shortId(b['id']),
@@ -467,7 +458,7 @@ class Api {
     'trip': await store.trip(b['trip_id']),
     'server_now': store.clock(),
     'qr': ['paid', 'used'].contains(b['status'])
-        ? await cipher.encrypt(await qrPayload(b))
+        ? await cipher.encrypt(b['id'], b['qr_id'])
         : null,
   };
   Future<Response> bookings(Request r) async {
@@ -524,15 +515,13 @@ class Api {
   Future<Response> verify(Request r) async {
     final u = await staff(r);
     final d = await body(r);
-    final payload = await cipher.decrypt((d['qr'] ?? '').toString());
+    final ticket = await cipher.decrypt((d['qr'] ?? '').toString());
     final result = await store.transaction(() async {
       await store.expireInside();
-      final b = payload == null
+      final b = ticket == null
           ? null
-          : await store.one('SELECT * FROM bookings WHERE id=?', [
-              payload['id'],
-            ]);
-      final res = await checkTicket(u, d, payload, b);
+          : await store.one('SELECT * FROM bookings WHERE id=?', [ticket.id]);
+      final res = await checkTicket(u, d, ticket, b);
       // Mọi lần quét đều lưu lại để quản lý đối soát, kể cả vé bị từ chối.
       await store.execute(
         'INSERT INTO scans(staff_id,booking_id,trip_id,result,boarded,created) VALUES(?,?,?,?,?,?)',
@@ -557,16 +546,16 @@ class Api {
   Future<Map<String, dynamic>> checkTicket(
     Map<String, dynamic> u,
     Map<String, dynamic> d,
-    Map<String, dynamic>? payload,
+    ({String id, String check})? ticket,
     Map<String, dynamic>? b,
   ) async {
-    if (payload == null)
+    if (ticket == null)
       return {
         'valid': false,
         'message': 'QR lạ, sai mã hóa hoặc đã bị sửa.',
         'reason': 'invalid',
       };
-    if (b == null || jsonEncode(await qrPayload(b)) != jsonEncode(payload))
+    if (b == null || QrCipher.check(b['qr_id']) != ticket.check)
       return {
         'valid': false,
         'message': 'Thông tin QR không khớp vé.',

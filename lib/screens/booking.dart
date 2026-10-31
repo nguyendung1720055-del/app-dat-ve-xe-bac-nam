@@ -8,6 +8,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../api.dart';
+import '../trip_notify.dart';
 import '../ui.dart';
 import 'maps.dart';
 
@@ -783,6 +784,24 @@ class _TicketDetailState extends State<TicketDetail> {
       '${b['trip']['time']} ngày ${dateLabel(b['trip']['date'])}, '
       'ghế ${(b['seats'] as List).join(', ')}';
 
+  Future<void> toggleNotify(Json b) async {
+    try {
+      if (TripNotify.pinned.value == b['id']) {
+        await TripNotify.stop();
+      } else {
+        await TripNotify.start(widget.session, b);
+        if (mounted) {
+          toast(
+            context,
+            'Đã hiện hành trình. Kéo thanh thông báo xuống để xem.',
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) toast(context, e);
+    }
+  }
+
   /// Ảnh QR nền trắng để người đi đưa nhân viên quét, không cần cài app.
   Future<void> shareQr(Json b) async {
     try {
@@ -1004,6 +1023,25 @@ class _TicketDetailState extends State<TicketDetail> {
                           onPressed: () => shareQr(b),
                           icon: const Icon(Icons.qr_code_2),
                           label: const Text('Gửi ảnh vé QR cho người đi'),
+                        ),
+                        gap(8),
+                      ],
+                      if (!staff && TripNotify.supported) ...[
+                        ValueListenableBuilder(
+                          valueListenable: TripNotify.pinned,
+                          builder: (context, pinned, _) => OutlinedButton.icon(
+                            onPressed: () => toggleNotify(b),
+                            icon: Icon(
+                              pinned == b['id']
+                                  ? Icons.notifications_off_outlined
+                                  : Icons.notifications_active_outlined,
+                            ),
+                            label: Text(
+                              pinned == b['id']
+                                  ? 'Tắt hành trình trên thanh thông báo'
+                                  : 'Hiện hành trình trên thanh thông báo',
+                            ),
+                          ),
                         ),
                         gap(8),
                       ],

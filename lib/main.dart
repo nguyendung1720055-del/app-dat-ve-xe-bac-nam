@@ -3,17 +3,30 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'api.dart';
+import 'trip_notify.dart';
 import 'ui.dart';
 import 'screens/admin.dart';
 import 'screens/auth.dart';
+import 'screens/booking.dart';
 import 'screens/customer.dart';
 import 'screens/staff.dart';
+
+final navigatorKey = GlobalKey<NavigatorState>();
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   final session = Session();
   runApp(BacNamApp(session: session));
-  session.restore();
+  session.restore().then(
+    (_) => TripNotify.init((id) {
+      if (session.user == null) return;
+      navigatorKey.currentState?.push(
+        MaterialPageRoute(
+          builder: (_) => TicketDetail(session: session, id: id),
+        ),
+      );
+    }),
+  );
 }
 
 class BacNamApp extends StatelessWidget {
@@ -21,6 +34,7 @@ class BacNamApp extends StatelessWidget {
   const BacNamApp({super.key, required this.session});
   @override
   Widget build(BuildContext context) => MaterialApp(
+    navigatorKey: navigatorKey,
     title: 'Bắc Nam',
     debugShowCheckedModeBanner: false,
     locale: const Locale('vi'),

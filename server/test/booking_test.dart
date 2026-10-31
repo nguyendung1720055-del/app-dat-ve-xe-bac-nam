@@ -209,10 +209,11 @@ void main() {
       method: 'POST',
       data: {'method': 'demo'},
     )).data;
-    expect(paid['qr'], startsWith('BN1.'));
-    expect(paid['qr'], isNot(contains('Nguyễn')));
+    expect(paid['qr'], startsWith('BN2.'));
+    expect((paid['qr'] as String).length, 76);
+    expect(paid['qr'], isNot(contains('Nguy')));
     final decrypted = await api.cipher.decrypt(paid['qr']);
-    expect(decrypted!['passenger'], 'Nguyễn Thị Ánh');
+    expect(decrypted!.id, held['id']);
     expect(
       (await call(
         '/staff/verify',
@@ -234,7 +235,7 @@ void main() {
             as String;
     final bytes = base64Url.decode(base64Url.normalize(qr.substring(4)));
     bytes[18] ^= 1;
-    final tampered = 'BN1.${base64UrlEncode(bytes)}';
+    final tampered = 'BN2.${base64UrlEncode(bytes)}';
     for (final value in ['https://example.com', tampered]) {
       final result = await call(
         '/staff/verify',

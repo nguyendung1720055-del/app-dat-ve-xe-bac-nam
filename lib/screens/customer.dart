@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../api.dart';
+import '../trip_notify.dart';
 import '../ui.dart';
 import 'booking.dart';
 import 'fleet.dart';
@@ -1466,6 +1467,7 @@ class _AccountPageState extends State<AccountPage> {
               'Bạn sẽ cần đăng nhập lại. Các đơn giữ chỗ vẫn tự hết hạn sau 5 phút.',
             )) {
               try {
+                await TripNotify.stop();
                 await session.logout();
               } catch (e) {
                 if (context.mounted) toast(context, e);

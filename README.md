@@ -181,14 +181,14 @@ Hủy vé đã trả tiền chuyển sang `refund_pending`, thu hồi quyền d�
 
 ## QR vé được mã hóa ra sao?
 
-`server/lib/security.dart` dùng **AES-256-GCM** qua package `cryptography`. Payload gồm id vé, định danh QR, hành khách, chuyến, ghế và ngày. Mỗi lần mã hóa dùng nonce ngẫu nhiên, có authentication tag và AAD `BACNAM:V1`.
+`server/lib/security.dart` dùng **AES-256-GCM** qua package `cryptography`. Bản rõ chỉ có **26 byte**: mã vé (18 byte) và 8 byte đầu của định danh QR (`qr_id`). Tên, ghế, chuyến, ngày **không nằm trong QR**: server tra trong MySQL khi quét. Mỗi lần mã hóa dùng nonce ngẫu nhiên 12 byte, có tag 16 byte và AAD `BACNAM:V2`.
 
-Chuỗi QR có dạng `BN1.<base64url(nonce + ciphertext + tag)>`. Đây là mã hóa có kiểm tra tính toàn vẹn, không phải chỉ đổi JSON thành Base64. Quét bằng camera thường không hiện thông tin cá nhân dạng rõ.
+Chuỗi QR có dạng `BN2.<base64url(nonce + ciphertext + tag)>`, luôn dài **76 ký tự**, nên QR thưa và dễ quét. Người thường quét bằng Zalo hay camera chỉ thấy chuỗi ngẫu nhiên. Sửa một ký tự thì sai tag GCM và bị từ chối.
 
 - Khóa 32 byte chỉ nằm **trên backend**: biến môi trường `QR_KEY` khi deploy, hoặc file `server/data/qr.key` khi chạy trên máy. Khóa không có trong Dart frontend hay APK.
 - Flutter dùng `qr_flutter` để vẽ chuỗi do backend cấp sau thanh toán.
 - `mobile_scanner` đọc chuỗi; trên Android plugin dùng Google ML Kit.
-- `/staff/verify` giải mã, đối chiếu payload với database, kiểm tra thanh toán, trạng thái đã dùng, quá ngày đi và sai chuyến nếu nhân viên đã chọn chuyến.
+- `/staff/verify` giải mã, lấy vé trong database theo mã vé, so 8 byte `qr_id`, kiểm tra thanh toán, trạng thái đã dùng, quá ngày đi và sai chuyến nếu nhân viên đã chọn chuyến.
 - **Xác nhận lên xe** kiểm tra lại trong giao dịch và đổi `paid → used`; hai yêu cầu đồng thời chỉ thành công một lần.
 - Xóa vé đã dùng chỉ là ẩn (`deleted_customer` / `deleted_staff`), không xóa khóa ghế hay bản ghi chống dùng lại.
 - Mất mạng không chấp nhận vé tự động. Sao lưu database **cùng với khóa QR**; xóa khóa sẽ khiến QR cũ không giải mã được.
