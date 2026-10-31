@@ -97,6 +97,8 @@ Web dùng bộ đọc QR của nền tảng web, không dùng ML Kit Android. Kh
 - Hủy giữ chỗ; yêu cầu hủy vé đã trả tiền trước giờ đi ít nhất 2 tiếng; theo dõi xử lý hoàn tiền.
 - Thông báo sự kiện đặt vé, hết hạn, thanh toán, lên xe. Xóa/ẩn vé đã dùng khỏi lịch sử của mình.
 - Chính sách và hướng dẫn hỗ trợ đặt vé trong Tài khoản.
+- **Hành trình trên thanh thông báo** (Chi tiết vé → Hiện hành trình trên thanh thông báo): giờ khởi hành, điểm kế tiếp, giờ dự kiến tới điểm xuống và thanh tiến trình theo km, cập nhật mỗi 30 giây khi app còn chạy. Chạm thông báo để mở vé. Làm bằng Dart với plugin `flutter_local_notifications` (`lib/trip_notify.dart`), không viết mã Android riêng.
+- **Gửi ảnh vé QR cho người đi** (mua vé cho bố mẹ, người thân) qua Zalo/Messenger.
 
 ## Chức năng nhân viên
 
