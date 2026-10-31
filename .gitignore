@@ -1,0 +1,15 @@
+.gradle/
+.idea/
+local.properties
+**/build/
+*.iml
+.dart_tool/
+.flutter-plugins-dependencies
+.packages
+.legacy/
+server/data/
+server/.dart_tool/
+*.sqlite*
+*.key
+android/.kotlin/
+/app/

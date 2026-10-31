@@ -1,0 +1,6 @@
+.dart_tool/
+data/
+test/
+build/
+*.sqlite
+*.sqlite-*

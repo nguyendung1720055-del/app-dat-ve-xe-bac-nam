@@ -1,0 +1,22 @@
+# Render Blueprint: New > Blueprint > chọn repo này. Các biến sync:false
+# Render sẽ hỏi khi tạo (dán URL MySQL của Aiven, mật khẩu quản lý...).
+services:
+  - type: web
+    name: bacnam-api
+    runtime: docker
+    plan: free
+    region: singapore
+    rootDir: server
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: QR_KEY
+        generateValue: true
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: STAFF_PASSWORD
+        sync: false
+      - key: DEMO_PAYMENTS
+        value: "true"

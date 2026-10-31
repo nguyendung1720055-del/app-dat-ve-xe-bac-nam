@@ -1,0 +1,7 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {"name":"Bắc Nam • Android emulator","request":"launch","type":"dart","program":"lib/main.dart","toolArgs":["--dart-define=API_URL=http://10.0.2.2:8080"]},
+    {"name":"Bắc Nam • Chrome localhost","request":"launch","type":"dart","program":"lib/main.dart","deviceId":"chrome","toolArgs":["--dart-define=API_URL=http://127.0.0.1:8080"]}
+  ]
+}
