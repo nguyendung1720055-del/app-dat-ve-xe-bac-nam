@@ -242,8 +242,11 @@ class Session extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Luôn thoát trên máy, kể cả khi máy chủ báo phiên đã hết hạn hoặc mất mạng.
   Future<void> logout() async {
-    await api.call('/auth/logout', method: 'POST');
+    try {
+      await api.call('/auth/logout', method: 'POST');
+    } catch (_) {}
     api.token = null;
     user = null;
     await storage.delete(key: 'token');
