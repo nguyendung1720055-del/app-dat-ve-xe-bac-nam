@@ -3,6 +3,7 @@ import 'package:shelf/shelf.dart';
 import 'package:shelf_router/shelf_router.dart';
 import 'admin.dart';
 import 'bus_types.dart';
+import 'docs_page.dart';
 import 'route_geo.dart';
 import 'security.dart';
 import 'store.dart';
@@ -19,15 +20,20 @@ class Api {
     this.demoPayments = true,
     this.bank = const {},
   }) {
-    router.get(
-      '/',
-      (_) => json({
+    // Mở bằng trình duyệt thì thấy trang giới thiệu; app/công cụ nhận JSON.
+    router.get('/', (Request r) {
+      if ((r.headers['accept'] ?? '').contains('text/html')) {
+        return Response.ok(
+          docsPage,
+          headers: {'content-type': 'text/html; charset=utf-8'},
+        );
+      }
+      return json({
         'name': 'Bắc Nam API',
         'description': 'Backend đặt vé xe khách Bắc Nam (Dart shelf + MySQL)',
         'status': 'running',
         'endpoints': {
           'health': 'GET /health',
-          'stations': 'GET /stations',
           'trips': 'GET /trips?from=&to=&date=',
           'trip_seats': 'GET /trips/<id>',
           'register': 'POST /auth/register',
@@ -35,8 +41,8 @@ class Api {
           'bookings': 'GET /bookings (cần đăng nhập)',
           'admin': '/admin/... (tài khoản quản lý)',
         },
-      }),
-    );
+      });
+    });
     router.get(
       '/health',
       (_) => json({
