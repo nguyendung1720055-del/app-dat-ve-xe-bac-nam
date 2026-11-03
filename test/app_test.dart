@@ -334,6 +334,30 @@ void main() {
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox());
   });
+  testWidgets('login keeps the status bar readable when scrolled', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(720, 1280);
+    tester.view.devicePixelRatio = 2;
+    tester.view.padding = const FakeViewPadding(top: 48);
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(BacNamApp(session: Session()..loading = false));
+    await tester.pump();
+    ColoredBox cover() => tester.widget<ColoredBox>(
+      find.byWidgetPredicate(
+        (w) =>
+            w is ColoredBox &&
+            w.color.toARGB32() & 0x00FFFFFF ==
+                forestDark.toARGB32() & 0x00FFFFFF,
+      ),
+    );
+    expect(cover().color.a, 0);
+    await tester.drag(find.byType(Scrollable).first, const Offset(0, -200));
+    await tester.pump();
+    expect(cover().color.a, 1);
+    expect(tester.getSize(find.byWidget(cover())).height, 24);
+    await tester.pumpWidget(const SizedBox());
+  });
   testWidgets('ticket QR header illustration lays out on a small display', (
     tester,
   ) async {

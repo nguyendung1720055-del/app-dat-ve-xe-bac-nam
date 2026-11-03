@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
 import '../api.dart';
@@ -118,11 +119,23 @@ class _SearchHomeState extends State<SearchHome> {
   DateTime date = DateTime.now();
   List<String> cities = ['Hà Nội', 'Đà Nẵng', 'TP. Hồ Chí Minh'];
   List<(String, String)> recent = [];
+  double statusCover = 0;
+  final scroll = ScrollController();
   @override
   void initState() {
     super.initState();
     loadCities();
     loadRecent();
+    scroll.addListener(() {
+      final v = (scroll.offset / 24).clamp(0.0, 1.0);
+      if (v != statusCover) setState(() => statusCover = v);
+    });
+  }
+
+  @override
+  void dispose() {
+    scroll.dispose();
+    super.dispose();
   }
 
   Future<void> loadCities() async {
@@ -504,158 +517,175 @@ class _SearchHomeState extends State<SearchHome> {
   );
 
   @override
-  Widget build(BuildContext context) => ListView(
-    padding: EdgeInsets.zero,
-    children: [
-      header(),
-      Padding(
-        padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+  Widget build(BuildContext context) => AnnotatedRegion<SystemUiOverlayStyle>(
+    // Phần đầu xanh đậm: chữ thanh trạng thái màu sáng.
+    value: SystemUiOverlayStyle.light.copyWith(
+      statusBarColor: Colors.transparent,
+    ),
+    child: Stack(
+      children: [
+        ListView(
+          controller: scroll,
+          padding: EdgeInsets.zero,
           children: [
-            Row(
-              children: [
-                shortcut(
-                  Icons.confirmation_number_outlined,
-                  'Vé của tôi',
-                  () => widget.onOpenTab?.call(1),
-                ),
-                shortcut(
-                  Icons.near_me_outlined,
-                  'Bến gần bạn',
-                  () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => NearbyStations(session: widget.session),
-                    ),
-                  ),
-                ),
-                shortcut(
-                  Icons.policy_outlined,
-                  'Chính sách',
-                  () => showPolicy(context),
-                ),
-                shortcut(
-                  Icons.support_agent,
-                  'Hỗ trợ',
-                  () => showSupport(context),
-                ),
-              ],
-            ),
-            if (recent.isNotEmpty) ...[
-              section('Tìm kiếm gần đây'),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
+            header(),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  for (final r in recent)
-                    ActionChip(
-                      avatar: const Icon(Icons.history, size: 18),
-                      label: Text('${r.$1} → ${r.$2}'),
-                      onPressed: () {
-                        setState(() {
-                          from = r.$1;
-                          to = r.$2;
-                        });
-                        search();
-                      },
-                    ),
-                ],
-              ),
-            ],
-            section('Đội xe Bắc Nam'),
-            const Text(
-              'Chọn loại xe phù hợp với nhu cầu của bạn',
-              style: TextStyle(color: Colors.black54),
-            ),
-            gap(10),
-            FleetStrip(session: widget.session, onPick: search),
-            section('Tuyến đường phổ biến'),
-            SizedBox(
-              height: 160,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                itemCount: _popularRoutes.length,
-                separatorBuilder: (_, _) => const SizedBox(width: 12),
-                itemBuilder: (_, i) {
-                  final r = _popularRoutes[i];
-                  return InkWell(
-                    borderRadius: BorderRadius.circular(22),
-                    onTap: () {
-                      setState(() {
-                        from = r.$1;
-                        to = r.$2;
-                      });
-                      search();
-                    },
-                    child: Container(
-                      width: 230,
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(22),
-                        gradient: LinearGradient(
-                          colors: r.$5,
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
+                  Row(
+                    children: [
+                      shortcut(
+                        Icons.confirmation_number_outlined,
+                        'Vé của tôi',
+                        () => widget.onOpenTab?.call(1),
+                      ),
+                      shortcut(
+                        Icons.near_me_outlined,
+                        'Bến gần bạn',
+                        () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                NearbyStations(session: widget.session),
+                          ),
                         ),
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Icon(
-                            Icons.directions_bus_filled,
-                            color: Colors.white70,
+                      shortcut(
+                        Icons.policy_outlined,
+                        'Chính sách',
+                        () => showPolicy(context),
+                      ),
+                      shortcut(
+                        Icons.support_agent,
+                        'Hỗ trợ',
+                        () => showSupport(context),
+                      ),
+                    ],
+                  ),
+                  if (recent.isNotEmpty) ...[
+                    section('Tìm kiếm gần đây'),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        for (final r in recent)
+                          ActionChip(
+                            avatar: const Icon(Icons.history, size: 18),
+                            label: Text('${r.$1} → ${r.$2}'),
+                            onPressed: () {
+                              setState(() {
+                                from = r.$1;
+                                to = r.$2;
+                              });
+                              search();
+                            },
                           ),
-                          const Spacer(),
-                          Text(
-                            '${r.$1}\n→ ${r.$2}',
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w800,
-                              height: 1.25,
+                      ],
+                    ),
+                  ],
+                  section('Đội xe Bắc Nam'),
+                  const Text(
+                    'Chọn loại xe phù hợp với nhu cầu của bạn',
+                    style: TextStyle(color: Colors.black54),
+                  ),
+                  gap(10),
+                  FleetStrip(session: widget.session, onPick: search),
+                  section('Tuyến đường phổ biến'),
+                  SizedBox(
+                    height: 160,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: _popularRoutes.length,
+                      separatorBuilder: (_, _) => const SizedBox(width: 12),
+                      itemBuilder: (_, i) {
+                        final r = _popularRoutes[i];
+                        return InkWell(
+                          borderRadius: BorderRadius.circular(22),
+                          onTap: () {
+                            setState(() {
+                              from = r.$1;
+                              to = r.$2;
+                            });
+                            search();
+                          },
+                          child: Container(
+                            width: 230,
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(22),
+                              gradient: LinearGradient(
+                                colors: r.$5,
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Icon(
+                                  Icons.directions_bus_filled,
+                                  color: Colors.white70,
+                                ),
+                                const Spacer(),
+                                Text(
+                                  '${r.$1}\n→ ${r.$2}',
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w800,
+                                    height: 1.25,
+                                  ),
+                                ),
+                                gap(6),
+                                Text(
+                                  'Từ ${money(r.$3)} • ${r.$4}',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(color: Colors.white70),
+                                ),
+                              ],
                             ),
                           ),
-                          gap(6),
-                          Text(
-                            'Từ ${money(r.$3)} • ${r.$4}',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(color: Colors.white70),
+                        );
+                      },
+                    ),
+                  ),
+                  section('An tâm trên từng chặng'),
+                  panel(
+                    child: const Column(
+                      children: [
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: Icon(
+                            Icons.event_seat_outlined,
+                            color: forest,
                           ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-            section('An tâm trên từng chặng'),
-            panel(
-              child: const Column(
-                children: [
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: Icon(Icons.event_seat_outlined, color: forest),
-                    title: Text('Ghế của bạn được giữ riêng'),
-                    subtitle: Text(
-                      'Khóa ghế ngay khi chọn, có thời hạn 5 phút.',
-                    ),
-                  ),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: Icon(Icons.qr_code_2, color: forest),
-                    title: Text('Vé QR mã hóa'),
-                    subtitle: Text('Chỉ cấp sau khi xác nhận thanh toán.'),
-                  ),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: Icon(Icons.currency_exchange, color: forest),
-                    title: Text('Hủy vé linh hoạt'),
-                    subtitle: Text(
-                      'Yêu cầu hoàn tiền trước giờ đi ít nhất 2 tiếng.',
+                          title: Text('Ghế của bạn được giữ riêng'),
+                          subtitle: Text(
+                            'Khóa ghế ngay khi chọn, có thời hạn 5 phút.',
+                          ),
+                        ),
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: Icon(Icons.qr_code_2, color: forest),
+                          title: Text('Vé QR mã hóa'),
+                          subtitle: Text(
+                            'Chỉ cấp sau khi xác nhận thanh toán.',
+                          ),
+                        ),
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: Icon(Icons.currency_exchange, color: forest),
+                          title: Text('Hủy vé linh hoạt'),
+                          subtitle: Text(
+                            'Yêu cầu hoàn tiền trước giờ đi ít nhất 2 tiếng.',
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -663,8 +693,18 @@ class _SearchHomeState extends State<SearchHome> {
             ),
           ],
         ),
-      ),
-    ],
+        // Khi cuộn, che phần nội dung trượt dưới thanh trạng thái.
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          height: MediaQuery.paddingOf(context).top,
+          child: IgnorePointer(
+            child: ColoredBox(color: forestDark.withValues(alpha: statusCover)),
+          ),
+        ),
+      ],
+    ),
   );
 }
 
