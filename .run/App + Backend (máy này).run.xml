@@ -1,0 +1,7 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="App + Backend (máy này)" type="CompoundRunConfigurationType">
+    <toRun name="Backend (máy này)" type="DartCommandLineRunConfigurationType" />
+    <toRun name="App (backend máy này)" type="FlutterRunConfigurationType" />
+    <method v="2" />
+  </configuration>
+</component>

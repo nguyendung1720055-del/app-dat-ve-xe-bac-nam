@@ -2,6 +2,14 @@
 
 Ứng dụng đề tài lập trình di động đặt vé xe Bắc–Nam. Giao diện và nghiệp vụ được viết lại bằng **Flutter/Dart**, thay bản Android Kotlin trước đây. Thiết kế riêng với xanh rừng, kem và cam; các luồng đặt xe tham khảo trải nghiệm tìm chuyến, chọn ghế và thanh toán của ứng dụng xe khách. Không phải sản phẩm của Phương Trang và không sao chép toàn bộ hệ thống thương mại của họ.
 
+## Demo bằng một nút Run trong Android Studio
+
+1. Kiểm tra máy trước: `powershell -ExecutionPolicy Bypass -File .\scripts\kiem-tra.ps1` (RAM, MySQL, backend, Render, máy ảo; dòng `[XX]` là phải sửa).
+2. Thanh công cụ Android Studio → chọn cấu hình **App + Backend (máy này)** → **Run**. Cấu hình này bật MySQL nếu cần, chạy backend (`server/bin/dev.dart`) và chạy app trỏ vào `http://10.0.2.2:8080`. Không cần VS Code, không cần Internet hay Render.
+3. Chỉ mở **một** trong hai: Android Studio hoặc VS Code khi chạy máy ảo; máy 14 GB RAM không đủ cho cả hai cùng máy ảo.
+
+Các cấu hình nằm trong thư mục `.run/`: *Backend (máy này)*, *App (backend máy này)*, *App + Backend (máy này)*. Cấu hình *main.dart* cũ vẫn dùng server Render.
+
 ## Chạy nhanh trên Windows / Android Studio
 
 Mở **thư mục `D:\xekhach`**, có `pubspec.yaml` và `lib/main.dart`, không mở riêng `android`. Cài plugin Flutter và Dart trong Android Studio nếu chưa có. Dự án đang dùng Flutter 3.47.5 / Dart 3.13.4 có sẵn trên máy.
