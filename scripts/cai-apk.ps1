@@ -34,6 +34,6 @@ foreach ($d in $devices) {
     $out = & $adb -s $d install $file.FullName 2>&1
     if ("$out" -match 'Success') { Write-Host '  Đã cài bản mới.' -ForegroundColor Green }
     else { Write-Host "  Cài lỗi: $out" -ForegroundColor Red; continue }
-    & $adb -s $d shell monkey -p $package -c android.intent.category.LAUNCHER 1 2>$null | Out-Null
+    & $adb -s $d shell "monkey -p $package -c android.intent.category.LAUNCHER 1 >/dev/null 2>&1"
     Write-Host '  Đã mở app.'
 }

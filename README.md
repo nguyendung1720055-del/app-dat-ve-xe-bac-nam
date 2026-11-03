@@ -1,4 +1,4 @@
-# BẮC NAM — Flutter + Dart backend
+# App Đặt Vé Xe Bắc Nam — Flutter + Dart backend
 
 Ứng dụng đề tài lập trình di động đặt vé xe Bắc–Nam. Giao diện và nghiệp vụ được viết lại bằng **Flutter/Dart**, thay bản Android Kotlin trước đây. Thiết kế riêng với xanh rừng, kem và cam; các luồng đặt xe tham khảo trải nghiệm tìm chuyến, chọn ghế và thanh toán của ứng dụng xe khách. Không phải sản phẩm của Phương Trang và không sao chép toàn bộ hệ thống thương mại của họ.
 
@@ -259,6 +259,6 @@ Bộ test backend kiểm tra tranh chấp hai khách, nhiều ghế nguyên tử
 
 Bản này phục vụ **đề tài chạy được với backend cục bộ**, chưa phải hệ thống thương mại đầy đủ như FUTA: chưa có cổng thanh toán tự động, OTP SMS/khôi phục mật khẩu khách hàng, ứng dụng tài xế/GPS, điểm thưởng/voucher, thông báo đẩy, quản trị nhiều chi nhánh hay triển khai máy chủ công khai. Lịch xe/giá/biển số mặc định là dữ liệu mẫu; backend sinh lịch 15 ngày. Muốn dùng kinh doanh cần dữ liệu vận hành thật, HTTPS, cấu hình thanh toán, sao lưu, giám sát và kiểm thử thiết bị trước khi phát hành.
 
-Tên project Flutter: `nguyen_anh_dung` (theo yêu cầu đặt tên `ho_va_ten`). Tên đề tài: Ứng dụng đặt vé xe Bắc Nam.
+Tên project Flutter: `nguyen_anh_dung` (theo yêu cầu đặt tên `ho_va_ten`). Tên đề tài: App Đặt Vé Xe Bắc Nam.
 
 Tài liệu tham khảo: [luồng đặt vé FUTA](https://futabus.vn/huong-dan-dat-ve-tren-web), [Flutter](https://docs.flutter.dev/install/quick), [mobile_scanner / ML Kit Android](https://pub.dev/packages/mobile_scanner), [cryptography](https://pub.dev/packages/cryptography), [mysql_client](https://pub.dev/packages/mysql_client).

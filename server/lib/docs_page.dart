@@ -38,7 +38,7 @@ const docsPage = r'''<!doctype html>
 <body>
 <header><div class="wrap">
   <h1>Bắc Nam API</h1>
-  <p>Backend của ứng dụng đặt vé xe khách Bắc Nam (Flutter)</p>
+  <p>Backend của App Đặt Vé Xe Bắc Nam (Flutter)</p>
   <span class="status">Trạng thái: <b id="st">đang kiểm tra…</b></span>
 </div></header>
 
@@ -98,7 +98,7 @@ const docsPage = r'''<!doctype html>
     <li>Các API cần đăng nhập gửi kèm header <code>Authorization: Bearer &lt;token&gt;</code>, nếu thiếu sẽ trả lỗi 401.</li>
     <li>Server dùng gói miễn phí, tự ngủ khi lâu không dùng; lần đầu mở có thể mất khoảng 1 phút.</li>
   </ul>
-  <footer>Bắc Nam: đồ án môn Lập trình di động</footer>
+  <footer>App Đặt Vé Xe Bắc Nam: đồ án môn Lập trình di động</footer>
 </div>
 <script>
   fetch('/health').then(r => r.json()).then(d => {

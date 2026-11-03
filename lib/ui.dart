@@ -156,7 +156,7 @@ class PhoneFrame extends StatelessWidget {
                       ),
                       gap(10),
                       const Text(
-                        'Ứng dụng đặt vé xe khách Bắc – Nam\nĐồ án môn Lập trình di động • Flutter',
+                        'App Đặt Vé Xe Bắc Nam\nĐồ án môn Lập trình di động • Flutter',
                         style: TextStyle(
                           fontFamily: 'BeVietnamPro',
                           color: Color(0xFFD1E8DD),

@@ -1,8 +1,8 @@
-# Tóm tắt dự án: Bắc Nam – Ứng dụng đặt vé xe khách
+# Tóm tắt dự án: App Đặt Vé Xe Bắc Nam
 
 Môn **Lập trình trên thiết bị di động** · Lớp 23DTHC3 · HUTECH
 Nhóm: Nguyễn Anh Dũng, Nguyễn Mậu Thái Duy, Phan Hữu Vinh, Hoàng Anh Quân
-Mã nguồn: https://github.com/nguyendung1720055-del/bac-nam-xe-khach
+Mã nguồn: https://github.com/nguyendung1720055-del/app-dat-ve-xe-bac-nam
 
 ---
 

@@ -30,7 +30,7 @@ class Api {
       }
       return json({
         'name': 'Bắc Nam API',
-        'description': 'Backend đặt vé xe khách Bắc Nam (Dart shelf + MySQL)',
+        'description': 'Backend của App Đặt Vé Xe Bắc Nam (Dart shelf + MySQL)',
         'status': 'running',
         'endpoints': {
           'health': 'GET /health',
