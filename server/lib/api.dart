@@ -20,6 +20,24 @@ class Api {
     this.bank = const {},
   }) {
     router.get(
+      '/',
+      (_) => json({
+        'name': 'Bắc Nam API',
+        'description': 'Backend đặt vé xe khách Bắc Nam (Dart shelf + MySQL)',
+        'status': 'running',
+        'endpoints': {
+          'health': 'GET /health',
+          'stations': 'GET /stations',
+          'trips': 'GET /trips?from=&to=&date=',
+          'trip_seats': 'GET /trips/<id>',
+          'register': 'POST /auth/register',
+          'login': 'POST /auth/login',
+          'bookings': 'GET /bookings (cần đăng nhập)',
+          'admin': '/admin/... (tài khoản quản lý)',
+        },
+      }),
+    );
+    router.get(
       '/health',
       (_) => json({
         'ok': true,
