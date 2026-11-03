@@ -417,6 +417,7 @@ void main() {
         'seats_today': 2,
         'boarded_today': 1,
         'revenue_today': 1900000,
+        'sales_today': 3800000,
         'scans_today': {'n': 3, 'rejected': 1},
         'daily': [
           for (var i = 0; i < 7; i++)
@@ -521,7 +522,31 @@ void main() {
     await tester.pumpWidget(BacNamApp(session: session));
     await tester.pumpAndSettle();
     expect(find.text('Quản lý Bắc Nam'), findsOneWidget);
-    expect(find.text('Doanh thu chuyến hôm nay'), findsOneWidget);
+    expect(find.text('Tiền bán vé hôm nay'), findsOneWidget);
+    expect(find.textContaining('3.800.000'), findsOneWidget);
+    // Khách vừa thanh toán: màn quản lý báo ngay ở lần hỏi kế tiếp.
+    responses['/admin/feed'] = {
+      'server_now': 1893456100,
+      'items': [
+        {
+          'code': 'BNNEW12345',
+          'passenger': 'Trần Văn Bình',
+          'seats': ['B01', 'B02'],
+          'amount': 1900000,
+          'paid_at': 1893456090,
+          'origin': 'Hà Nội',
+          'destination': 'Đà Nẵng',
+          'date': '2030-01-05',
+          'time': '07:00',
+        },
+      ],
+    };
+    await tester.pump(const Duration(seconds: 5));
+    await tester.pump(const Duration(seconds: 5));
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(find.textContaining('Vé mới BNNEW12345'), findsOneWidget);
+    await tester.pump(const Duration(seconds: 7));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Chuyến'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Hà Nội → TP. Hồ Chí Minh'));

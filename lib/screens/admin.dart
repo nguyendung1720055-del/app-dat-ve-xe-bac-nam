@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../api.dart';
+import '../trip_notify.dart';
 import '../ui.dart';
 import 'booking.dart';
 import 'customer.dart';
@@ -21,6 +22,71 @@ class AdminShell extends StatefulWidget {
 
 class _AdminShellState extends State<AdminShell> {
   int index = 0;
+
+  /// Tăng mỗi khi có vé mới để màn Tổng quan tự tải lại.
+  int fresh = 0;
+  int? since;
+  Timer? feed;
+
+  @override
+  void initState() {
+    super.initState();
+    poll();
+    feed = Timer.periodic(const Duration(seconds: 5), (_) => poll());
+  }
+
+  @override
+  void dispose() {
+    feed?.cancel();
+    super.dispose();
+  }
+
+  /// Hỏi máy chủ có vé nào vừa thanh toán; lần đầu chỉ lấy mốc thời gian.
+  Future<void> poll() async {
+    try {
+      final data = await widget.session.api.call(
+        since == null ? '/admin/feed' : '/admin/feed?after=$since',
+      );
+      final first = since == null;
+      final items = first ? const [] : data['items'] as List;
+      since = items.isEmpty
+          ? data['server_now'] as int
+          : items.last['paid_at'] as int;
+      if (items.isEmpty || !mounted) return;
+      for (final b in items) {
+        final text =
+            '${b['passenger']} • ${b['origin']} → ${b['destination']} '
+            '${b['time']} ${_dmy(b['date'])} • ghế ${(b['seats'] as List).join(', ')}';
+        TripNotify.alert(
+          (b['paid_at'] as int) % 100000,
+          'Vé mới ${b['code']}: ${money(b['amount'])}',
+          text,
+        );
+      }
+      final last = items.last;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 6),
+            content: Text(
+              items.length == 1
+                  ? 'Vé mới ${last['code']} • ${last['passenger']} • ${money(last['amount'])}'
+                  : '${items.length} vé mới vừa thanh toán',
+            ),
+            action: SnackBarAction(
+              label: 'Xem',
+              onPressed: () => setState(() => index = 0),
+            ),
+          ),
+        );
+      setState(() => fresh++);
+    } catch (_) {
+      // Mất mạng thì thử lại ở lần sau.
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final session = widget.session;
@@ -63,7 +129,7 @@ class _AdminShellState extends State<AdminShell> {
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 760),
           child: switch (index) {
-            0 => AdminOverview(session: session),
+            0 => AdminOverview(key: ValueKey(fresh), session: session),
             1 => AdminTrips(session: session),
             2 => AdminCustomers(session: session),
             3 => AdminStaff(session: session),
@@ -107,6 +173,12 @@ String _time(dynamic ts, [String pattern = 'HH:mm dd/MM']) => ts == null
         DateTime.fromMillisecondsSinceEpoch((ts as int) * 1000).toLocal(),
       );
 String _day(DateTime d) => d.toIso8601String().substring(0, 10);
+
+/// '2026-11-05' -> '05/11'.
+String _dmy(dynamic date) {
+  final p = '$date'.split('-');
+  return p.length == 3 ? '${p[2]}/${p[1]}' : '$date';
+}
 
 /// Tải dữ liệu từ `path`, tự tải lại khi `path` đổi và hỗ trợ kéo để làm mới.
 class _Remote extends StatefulWidget {
@@ -291,11 +363,11 @@ class AdminOverview extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'Doanh thu chuyến hôm nay',
+                  'Tiền bán vé hôm nay',
                   style: TextStyle(color: Color(0xFFD1E8DD)),
                 ),
                 Text(
-                  money(data['revenue_today']),
+                  money(data['sales_today'] ?? data['revenue_today']),
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 28,
@@ -303,6 +375,10 @@ class AdminOverview extends StatelessWidget {
                   ),
                 ),
                 gap(6),
+                Text(
+                  'Doanh thu các chuyến chạy hôm nay: ${money(data['revenue_today'])}',
+                  style: const TextStyle(color: Color(0xFFD1E8DD)),
+                ),
                 Text(
                   'Tổng giá trị vé đã bán: ${money(revenue)}',
                   style: const TextStyle(color: Color(0xFFD1E8DD)),

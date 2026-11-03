@@ -86,6 +86,7 @@ const docsPage = r'''<!doctype html>
     <tr><td><span class="m POST">POST</span></td><td><code>/staff/trips/{id}/position</code></td><td>Gửi vị trí GPS của xe</td><td class="lock">Nhân viên</td></tr>
     <tr><td><span class="m GET">GET</span></td><td><code>/staff/stats</code></td><td>Thống kê soát vé</td><td class="lock">Nhân viên</td></tr>
     <tr><td><span class="m GET">GET</span></td><td><code>/admin/overview</code></td><td>Tổng quan doanh thu, số vé</td><td class="lock">Quản lý</td></tr>
+    <tr><td><span class="m GET">GET</span></td><td><code>/admin/feed?after=…</code></td><td>Vé vừa thanh toán (báo ngay cho quản lý)</td><td class="lock">Quản lý</td></tr>
     <tr><td><span class="m POST">POST</span></td><td><code>/admin/trips</code></td><td>Tạo / sửa chuyến xe</td><td class="lock">Quản lý</td></tr>
     <tr><td><span class="m GET">GET</span></td><td><code>/admin/customers</code></td><td>Quản lý khách hàng</td><td class="lock">Quản lý</td></tr>
     <tr><td><span class="m GET">GET</span></td><td><code>/admin/staff</code></td><td>Quản lý nhân viên (tạo, khóa, đặt lại mật khẩu)</td><td class="lock">Quản lý</td></tr>

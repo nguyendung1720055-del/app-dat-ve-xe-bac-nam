@@ -557,6 +557,28 @@ void main() {
       expect(stale['delay'], 0);
     },
   );
+  test('admin feed reports bookings paid after the given moment', () async {
+    final start = now;
+    final empty = (await call('/admin/feed?after=$start', token: 'admin')).data;
+    expect(empty['items'], isEmpty);
+    final b = (await hold(seats: ['A01', 'A02'])).data;
+    now += 5;
+    await call(
+      '/bookings/${b['id']}/pay',
+      method: 'POST',
+      data: {'method': 'demo'},
+    );
+    final feed = (await call('/admin/feed?after=$start', token: 'admin')).data;
+    expect(feed['items'], hasLength(1));
+    expect(feed['items'][0]['seats'], ['A01', 'A02']);
+    expect(feed['items'][0]['passenger'], 'Nguyễn Thị Ánh');
+    final later = (await call(
+      '/admin/feed?after=${feed['server_now']}',
+      token: 'admin',
+    )).data;
+    expect(later['items'], isEmpty);
+    expect((await call('/admin/feed', token: 'staff')).status, 403);
+  });
   test('only admin can open management APIs; admin keeps staff rights', () async {
     for (final token in ['customer1', 'staff']) {
       expect((await call('/admin/overview', token: token)).status, 403);

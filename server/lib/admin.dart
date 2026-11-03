@@ -75,6 +75,9 @@ void adminRoutes(Api api) {
         0,
         (s, b) => s + (b['amount'] as int),
       ),
+      // Tiền thu được hôm nay, tính theo lúc thanh toán (chuyến ngày nào cũng tính).
+      'sales_today': daily[today]?['total'] ?? 0,
+      'sales_today_tickets': daily[today]?['tickets'] ?? 0,
       'scans_today': await store.one(
         "SELECT COUNT(*) AS n,COALESCE(SUM(result!='valid'),0) AS rejected FROM scans WHERE created>=?",
         [vnMidnight(today)],
@@ -313,6 +316,28 @@ void adminRoutes(Api api) {
         [id],
       ),
     );
+  });
+
+  // Vé vừa thanh toán sau mốc `after`, để app quản lý báo ngay khi có khách đặt.
+  router.get('/admin/feed', (Request r) async {
+    await api.admin(r);
+    final now = store.clock();
+    final after = int.tryParse(r.url.queryParameters['after'] ?? '') ?? now;
+    final rows = await store.rows(
+      "SELECT b.id,b.passenger,b.seats,b.amount,b.paid_at,t.origin,t.destination,t.date,t.time FROM bookings b JOIN trips t ON t.id=b.trip_id WHERE b.paid_at>? AND b.status IN ('paid','used') ORDER BY b.paid_at LIMIT 20",
+      [after],
+    );
+    return api.json({
+      'server_now': now,
+      'items': [
+        for (final b in rows)
+          {
+            ...b,
+            'code': Store.shortId(b['id']),
+            'seats': jsonDecode(b['seats']),
+          },
+      ],
+    });
   });
 
   router.get('/admin/scans', (Request r) async {

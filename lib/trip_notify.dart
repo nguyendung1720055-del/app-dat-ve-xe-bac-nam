@@ -68,6 +68,39 @@ class TripNotify {
     if (supported) await _plugin.cancel(id: _id);
   }
 
+  /// Báo cho quản lý có vé mới thanh toán (kêu và hiện trên thanh thông báo).
+  static Future<void> alert(int id, String title, String body) async {
+    if (!supported) return;
+    try {
+      await _alert(id, title, body);
+    } catch (_) {
+      // Không có plugin (ví dụ khi chạy test): vẫn còn thông báo trong app.
+    }
+  }
+
+  static Future<void> _alert(int id, String title, String body) async {
+    await _plugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >()
+        ?.requestNotificationsPermission();
+    await _plugin.show(
+      id: id,
+      title: title,
+      body: body,
+      notificationDetails: const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'admin_bookings',
+          'Vé mới',
+          channelDescription: 'Báo quản lý khi khách đặt và thanh toán vé',
+          importance: Importance.high,
+          priority: Priority.high,
+          color: Color(0xFF1F6F5C),
+        ),
+      ),
+    );
+  }
+
   static String _hm(int epoch) =>
       DateFormat('HH:mm')
           .format(DateTime.fromMillisecondsSinceEpoch(epoch * 1000));
