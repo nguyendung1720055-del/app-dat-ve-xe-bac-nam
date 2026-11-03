@@ -259,6 +259,6 @@ Bộ test backend kiểm tra tranh chấp hai khách, nhiều ghế nguyên tử
 
 Bản này phục vụ **đề tài chạy được với backend cục bộ**, chưa phải hệ thống thương mại đầy đủ như FUTA: chưa có cổng thanh toán tự động, OTP SMS/khôi phục mật khẩu khách hàng, ứng dụng tài xế/GPS, điểm thưởng/voucher, thông báo đẩy, quản trị nhiều chi nhánh hay triển khai máy chủ công khai. Lịch xe/giá/biển số mặc định là dữ liệu mẫu; backend sinh lịch 15 ngày. Muốn dùng kinh doanh cần dữ liệu vận hành thật, HTTPS, cấu hình thanh toán, sao lưu, giám sát và kiểm thử thiết bị trước khi phát hành.
 
-Tên dự án đang để `bac_nam`; họ tên/mã sinh viên theo yêu cầu bài tập sẽ bổ sung sau theo thông tin bạn xác nhận.
+Tên project Flutter: `nguyen_anh_dung` (theo yêu cầu đặt tên `ho_va_ten`). Tên đề tài: Ứng dụng đặt vé xe Bắc Nam.
 
 Tài liệu tham khảo: [luồng đặt vé FUTA](https://futabus.vn/huong-dan-dat-ve-tren-web), [Flutter](https://docs.flutter.dev/install/quick), [mobile_scanner / ML Kit Android](https://pub.dev/packages/mobile_scanner), [cryptography](https://pub.dev/packages/cryptography), [mysql_client](https://pub.dev/packages/mysql_client).

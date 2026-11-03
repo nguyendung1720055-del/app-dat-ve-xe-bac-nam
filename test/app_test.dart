@@ -1,12 +1,12 @@
 import 'dart:convert';
 
-import 'package:bac_nam/api.dart';
-import 'package:bac_nam/main.dart';
-import 'package:bac_nam/screens/booking.dart';
-import 'package:bac_nam/screens/customer.dart';
-import 'package:bac_nam/screens/maps.dart';
-import 'package:bac_nam/screens/seats.dart';
-import 'package:bac_nam/ui.dart';
+import 'package:nguyen_anh_dung/api.dart';
+import 'package:nguyen_anh_dung/main.dart';
+import 'package:nguyen_anh_dung/screens/booking.dart';
+import 'package:nguyen_anh_dung/screens/customer.dart';
+import 'package:nguyen_anh_dung/screens/maps.dart';
+import 'package:nguyen_anh_dung/screens/seats.dart';
+import 'package:nguyen_anh_dung/ui.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';

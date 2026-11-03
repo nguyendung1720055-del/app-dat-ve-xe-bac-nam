@@ -1,9 +1,9 @@
 import 'dart:io';
 import 'dart:ui' as ui;
 
-import 'package:bac_nam/api.dart';
-import 'package:bac_nam/main.dart';
-import 'package:bac_nam/screens/customer.dart';
+import 'package:nguyen_anh_dung/api.dart';
+import 'package:nguyen_anh_dung/main.dart';
+import 'package:nguyen_anh_dung/screens/customer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
